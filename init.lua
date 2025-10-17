@@ -13,6 +13,9 @@ require("config.lazy")
 -- Color scheme
 vim.cmd[[colorscheme tokyonight-night]]
 
+-- Use Esc to turn off highlighting after searching for something.
+vim.keymap.set("n", "<esc>", "<cmd>noh<cr>")
+
 -- Set up treesitter.
 require('nvim-treesitter.configs').setup {
   highlight = {
@@ -26,7 +29,7 @@ require('nvim-treesitter.configs').setup {
 local function search_project_files()
   -- Get the directory from the buffer to use as the "current directory".
   local buffer_dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':h')
-  local job = vim.fn.systemlist(string.format("cd %s; git rev-parse --show-toplevel", buffer_dir))
+  local job = vim.fn.systemlist(string.format("cd %s; git rev-parse --show-toplevel 2>/dev/null || true", buffer_dir))
   local git_root = job[1]
 
   if git_root and git_root ~= "" then
