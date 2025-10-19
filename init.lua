@@ -19,7 +19,10 @@ vim.keymap.set("n", "<esc>", "<cmd>noh<cr>")
 -- Set up treesitter.
 require('nvim-treesitter.configs').setup {
   highlight = {
-    enable = true, -- Enable Treesitter highlighting
+    enable = true,
+  },
+  indent = {
+    enable = true,
   },
 }
 
