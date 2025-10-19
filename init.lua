@@ -26,6 +26,19 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
+-- Check if a string ends with a suffix
+local function str_ends_with(str, suffix)
+  return str:match(suffix .. "$") ~= nil
+end
+
+-- Add the suffix to the string if not already there.
+local function ensure_suffix(str, suffix)
+  if str_ends_with(str, suffix) then
+    return str
+  end
+  return str .. suffix
+end
+
 -- Check if the buffer is NERDTree.
 local function is_nerd_tree()
   local buffer_name = vim.api.nvim_buf_get_name(0)
@@ -56,6 +69,13 @@ local function get_buffer_dir()
   local buffer_dir = vim.fn.fnamemodify(buffer_name, ":h")
   return buffer_dir
 end
+
+-- Relative edit.  This prepopulates the current buffer's directory.
+vim.keymap.set("n", "<leader>e", function()
+  local buffer_dir = ensure_suffix(get_buffer_dir(), "/")
+  vim.api.nvim_feedkeys(string.format(":edit %s", buffer_dir), "n", true)
+end, { desc = "Edit from the relative directory." })
+
 
 -- Find project files.  By default it tries to search from the root of the
 -- git repo.  If not in a repo, it searches from the current directory and
@@ -105,6 +125,9 @@ vim.keymap.set("n", "<leader>fs", search_project_files, { desc = "Search project
 
 -- Find open buffers
 vim.keymap.set("n", "<leader>fb", require("fzf-lua").buffers, { desc = "Find open buffers with FZF." })
+
+-- Find files in same directory
+vim.keymap.set("n", "<leader>fd", function() require("fzf-lua").files({ search = get_buffer_dir(), cmd = "rg --files --max-depth 1 .", cwd = get_buffer_dir() }) end, { desc = "Find files in same directory" })
 
 -- Trim whitespace when saving a file.
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
