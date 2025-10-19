@@ -138,3 +138,24 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
     vim.fn.setpos(".", save_cursor) -- Restore cursor position
   end,
 })
+
+
+
+-- Bazel integration (This is a work in progress...)
+vim.api.nvim_create_user_command("Bazel",
+  function(command)
+    local original_wd = vim.fn.getcwd()
+
+    local job = vim.fn.systemlist(string.format("cd %s; git rev-parse --show-toplevel 2>/dev/null || true", buffer_dir))
+    local git_root = job[1]
+
+    vim.notify(git_root)
+
+    vim.api.nvim_exec("set makeprg=bazel", false)
+    vim.api.nvim_exec(string.format("make %s", command.args), false)
+  end,
+  {
+    nargs = "*",
+    desc = "Invoke bazel.",
+  })
+
