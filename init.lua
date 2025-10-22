@@ -12,7 +12,14 @@ vim.opt.autochdir = true -- Change cwd in each buffer.
 require("config.lazy")
 
 -- Color scheme
-vim.cmd[[colorscheme tokyonight-night]]
+require("tokyonight").setup({
+  style = "night",
+  on_colors = function(colors)
+    -- Brighten up comments a bit.
+    colors.comment = require("tokyonight.util").lighten(colors.comment, 0.6)
+  end
+})
+vim.cmd[[colorscheme tokyonight]]
 
 -- Use Esc to turn off highlighting after searching for something.
 vim.keymap.set("n", "<esc>", "<cmd>noh<cr>")
