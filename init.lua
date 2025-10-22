@@ -18,6 +18,10 @@ vim.keymap.set("n", "<esc>", "<cmd>noh<cr>")
 
 -- Set up treesitter.
 require('nvim-treesitter.configs').setup {
+  ensure_installed = { "lua", "vim", "vimdoc", "c", "cpp", "python", "rust", "markdown", "markdown_inline" },
+
+  sync_install = false,
+
   highlight = {
     enable = true,
   },
