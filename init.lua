@@ -26,6 +26,9 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
+-- Set up oil (this a directory editor).
+require("oil").setup()
+
 -- Check if a string ends with a suffix
 local function str_ends_with(str, suffix)
   return str:match(suffix .. "$") ~= nil
