@@ -40,7 +40,19 @@ require('nvim-treesitter.configs').setup {
 }
 
 -- Set up oil (this a directory editor).
-require("oil").setup()
+require("oil").setup({
+  watch_for_changes = true,
+})
+-- Autocommand to run actions.cd when entering an Oil buffer
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "oil://*",
+  callback = function()
+    require("oil.actions").cd.callback({
+      silent = true
+    })
+  end,
+})
+
 
 -- Check if a string ends with a suffix
 local function str_ends_with(str, suffix)
