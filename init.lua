@@ -159,10 +159,15 @@ vim.keymap.set("n", "<leader>ls", function() require("fzf-lua").live_grep_native
 vim.keymap.set("n", "<leader>ld", function() require("fzf-lua").files({ search = get_buffer_dir(), cmd = find_directory_cmd, cwd = get_buffer_dir() }) end, { desc = "Find files in same directory" })
 
 -- Find open buffers
-vim.keymap.set("n", "<leader>fb", require("fzf-lua").buffers, { desc = "Find open buffers with FZF." })
+vim.keymap.set("n", "<leader>b", require("fzf-lua").buffers, { desc = "Find open buffers with FZF." })
 
--- Find files in same directory
-vim.keymap.set("n", "<leader>fd", function() require("fzf-lua").files({ search = get_buffer_dir(), cmd = "rg --files --max-depth 1 .", cwd = get_buffer_dir() }) end, { desc = "Find files in same directory" })
+-- Switch buffers. This is easier to type than :b#.
+vim.keymap.set("n", "<leader>bs", ":b#<CR>",
+  { noremap = true, silent = true, desc = "Switch to last buffer." })
+
+-- Close buffer without closing window.
+vim.keymap.set("n", "<leader>bc", ":bp<bar>sp<bar>bn<bar>bd<CR>",
+  { noremap = true, silent = true, desc = "Switch to last buffer." })
 
 -- Trim whitespace when saving a file.
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
