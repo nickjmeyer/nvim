@@ -67,35 +67,10 @@ local function ensure_suffix(str, suffix)
   return str .. suffix
 end
 
--- Check if the buffer is NERDTree.
-local function is_nerd_tree()
-  local buffer_name = vim.api.nvim_buf_get_name(0)
-  local buffer_stem = vim.fn.fnamemodify(buffer_name, ":t")
-  if string.find(buffer_stem, "NERD_tree_") then
-    return true
-  end
-  return false
-end
-
--- If in NERDTree, toggle off.
-local function toggle_nerd_tree()
-  if is_nerd_tree() then
-    vim.api.nvim_exec(":NERDTreeToggle", false)
-  end
-end
-
 -- Helper function to determine the directory of the buffer.
--- If in NERDTree, return the root dir.
 -- Otherwise, return directory of current buffer.
 local function get_buffer_dir()
-  if is_nerd_tree() then
-    local nerd_tree_root = vim.api.nvim_exec("echo b:NERDTree.root.path.str()", true)
-    return nerd_tree_root
-  end
-
-  local buffer_name = vim.api.nvim_buf_get_name(0)
-  local buffer_dir = vim.fn.fnamemodify(buffer_name, ":h")
-  return buffer_dir
+  return vim.loop.cwd()
 end
 
 -- Relative edit.  This prepopulates the current buffer's directory.
@@ -115,7 +90,6 @@ local function find_project_files()
   local job = vim.fn.systemlist(string.format("cd %s; git rev-parse --show-toplevel 2>/dev/null || true", buffer_dir))
   local git_root = job[1]
 
-  toggle_nerd_tree()
   if git_root and git_root ~= "" then
     require("fzf-lua").git_files({ cwd = git_root })
   else
@@ -138,7 +112,6 @@ local function search_project_files()
   local job = vim.fn.systemlist(string.format("cd %s; git rev-parse --show-toplevel 2>/dev/null || true", buffer_dir))
   local git_root = job[1]
 
-  toggle_nerd_tree()
   if git_root and git_root ~= "" then
     require("fzf-lua").live_grep({ cwd = git_root })
   else
