@@ -8,6 +8,7 @@ vim.opt.expandtab = true
 vim.opt.autoindent = true
 vim.opt.smartindent = true
 vim.opt.autochdir = true -- Change cwd in each buffer.
+vim.opt.autoread = true -- Reload files when changed on disk.
 
 require("config.lazy")
 
