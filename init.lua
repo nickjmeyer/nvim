@@ -179,6 +179,15 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
   end,
 })
 
+-- Add a shortcut for showing the git log with --decorate.
+vim.api.nvim_create_user_command("Glog",
+  function (command)
+    vim.api.nvim_exec("G log --decorate", false)
+  end,
+  {
+    desc = "Git log with --decorate.",
+  })
+
 -- Bazel integration (This is a work in progress...)
 vim.api.nvim_create_user_command("Bazel",
   function(command)
