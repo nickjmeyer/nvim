@@ -180,7 +180,7 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
 })
 
 -- Add a shortcut for showing the git log with --decorate.
-vim.api.nvim_create_user_command("Glog",
+vim.api.nvim_create_user_command("Log",
   function (command)
     vim.api.nvim_exec("G log --decorate", false)
   end,
