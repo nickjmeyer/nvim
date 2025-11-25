@@ -61,6 +61,8 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
+-- Enable the buffer MRU
+require("buffer_mru")
 
 -- Check if a string ends with a suffix
 local function str_ends_with(str, suffix)
@@ -169,13 +171,69 @@ vim.keymap.set("n", "<leader>ld", function() require("fzf-lua").files({ search =
 -- Find open buffers
 vim.keymap.set("n", "<leader>bl", require("fzf-lua").buffers, { desc = "Find open buffers with FZF." })
 
--- Switch buffers. This is easier to type than :b#.
-vim.keymap.set("n", "<leader>bs", ":b#<CR>",
-  { noremap = true, silent = true, desc = "Switch to last buffer." })
+-- Switch to the last used buffer that isn't visible in another window.
+local function switch_to_mru_buffer_not_visibile()
+  local buffers = require("buffer_mru").mru_buffers()
+
+  for _, bufnr in ipairs(buffers) do
+    if vim.tbl_isempty(vim.fn.win_findbuf(bufnr))
+    then
+      vim.cmd(string.format("buffer %d", bufnr))
+      return
+    end
+  end
+  vim.print("All buffers are visible.  Doing nothing.")
+end
+
+-- Switch buffers.
+vim.keymap.set("n", "<leader>bs",
+  switch_to_mru_buffer_not_visibile,
+  { noremap = true, silent = false, desc = "Switch to most recently used buffer not currently viewed."})
 
 -- Close buffer without closing window.
-vim.keymap.set("n", "<leader>bc", ":bp<bar>sp<bar>bn<bar>bd<CR>",
-  { noremap = true, silent = true, desc = "Switch to last buffer." })
+vim.keymap.set("n", "<leader>bc",
+  function ()
+    local buf_to_delete = vim.api.nvim_get_current_buf()
+
+    local buffers = require("buffer_mru").mru_buffers()
+    -- Try to switch to another buffer that isn't viewed before we delete the original buffer.
+    for _, bufnr in ipairs(buffers) do
+      if vim.tbl_isempty(vim.fn.win_findbuf(bufnr))
+      then
+        vim.cmd(string.format("buffer %d", bufnr))
+        vim.cmd(string.format("bdelete %d", buf_to_delete))
+        return
+      end
+    end
+    -- If there aren't any buffers to switch to, then switch to a new buffer
+    -- and then delete it. This ay be annoying if we find ourselves here often.
+    -- It could be better to just switch to another buffer even if its already
+    -- open in another window.
+    vim.cmd("enew")
+    vim.cmd(string.format("bdelete %d", buf_to_delete))
+  end,
+  { noremap = true, silent = true, desc = "Close buffer but keep window open." })
+
+-- Print MRU buffers.
+vim.api.nvim_create_user_command("ShowMRUBuffers",
+  function()
+    local buffers = require("buffer_mru").mru_buffers()
+
+    local message = {string.format("Open Buffers: %d", #buffers)}
+    for _, bufnr in ipairs(buffers) do
+      local buf_name = vim.api.nvim_buf_get_name(bufnr)
+      local is_valid = vim.api.nvim_buf_is_valid(bufnr)
+      local is_loaded = vim.api.nvim_buf_is_loaded(bufnr)
+      local is_listed = vim.fn.buflisted(bufnr)
+      table.insert(message, string.format("Buffer %d: {Valid: %s, Loaded: %s, Listed: %s, Name: %s}", bufnr, tostring(is_valid), tostring(is_loaded), tostring(is_listed), buf_name))
+    end
+    vim.print(table.concat(message, "\n"))
+  end,
+  { desc = "Print MRU buffers."})
+
+-- Copy the path to the current buffer to the `+` register.  Can be yanked with "+p.
+vim.keymap.set("n", "<leader>bp", ":let @+ = expand('%:p')<CR>",
+  { noremap = true, silent = true, desc = "Copy path to current buffer to register `+`." })
 
 -- Trim whitespace when saving a file.
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
