@@ -167,7 +167,7 @@ vim.keymap.set("n", "<leader>ls", function() require("fzf-lua").live_grep_native
 vim.keymap.set("n", "<leader>ld", function() require("fzf-lua").files({ search = get_buffer_dir(), cmd = find_directory_cmd, cwd = get_buffer_dir() }) end, { desc = "Find files in same directory" })
 
 -- Find open buffers
-vim.keymap.set("n", "<leader>b", require("fzf-lua").buffers, { desc = "Find open buffers with FZF." })
+vim.keymap.set("n", "<leader>bl", require("fzf-lua").buffers, { desc = "Find open buffers with FZF." })
 
 -- Switch buffers. This is easier to type than :b#.
 vim.keymap.set("n", "<leader>bs", ":b#<CR>",
