@@ -231,6 +231,74 @@ vim.api.nvim_create_user_command("ShowMRUBuffers",
   end,
   { desc = "Print MRU buffers."})
 
+-- Determine if two files are related
+local function are_files_related(file_a, file_b)
+  if vim.fn.fnamemodify(file_a, ":t") == vim.fn.fnamemodify(file_b, ":t")
+  then
+    return false
+  end
+  -- As long as the files aren't the same, they're releated if they're the same
+  -- after stripping the extension.  It may be useful to have this strip all
+  -- extensions so something like `foo.bar.baz` would compare similar to
+  -- `foo.bar`.
+  return vim.fn.fnamemodify(file_a, ":t:r") == vim.fn.fnamemodify(file_b, ":t:r")
+end
+
+-- List related files
+local function list_related_files()
+  if vim.bo.buftype ~= ""
+  then
+    vim.print("Not visiting a file.")
+    return {}
+  end
+
+  local full_path = vim.api.nvim_buf_get_name(0)
+  local directory = vim.fn.fnamemodify(full_path, ':h')
+  local files_and_dirs = vim.fn.readdir(directory)
+
+  local related_files = {}
+
+  -- Iterate and print each item
+  for _, item in ipairs(files_and_dirs) do
+    if are_files_related(full_path, item)
+    then
+      table.insert(related_files, item)
+    end
+  end
+  return related_files
+end
+
+
+-- Switch to related file in same directory.
+vim.keymap.set("n", "<leader>lr",
+  function()
+    local related_files = list_related_files()
+
+    if vim.tbl_isempty(related_files)
+    then
+      vim.print("No related files.")
+    elseif #related_files == 1
+    then
+      vim.print(string.fomrat("%s/%s", directory, related_files[1]))
+      vim.cmd(string.format("edit %s", related_files[1]))
+    else
+      local opts = {
+        cwd = vim.fn.getcwd(),
+        actions = {
+          ["default"] = function(selected_files)
+            if #selected_files > 0 then
+              vim.cmd(string.format("edit %s", selected_files[1]))
+            end
+          end,
+        },
+      }
+      opts = require("fzf-lua").config.normalize_opts(opts, "files")
+      require("fzf-lua").fzf_exec(list_related_files(), opts)
+    end
+  end,
+  { noremap = true, silent = true, desc = "Switch to related file in same directory."})
+
+
 -- Copy the path to the current buffer to the `+` register.  Can be yanked with "+p.
 vim.keymap.set("n", "<leader>bp", ":let @+ = expand('%:p')<CR>",
   { noremap = true, silent = true, desc = "Copy path to current buffer to register `+`." })
