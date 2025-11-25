@@ -25,6 +25,14 @@ vim.cmd[[colorscheme tokyonight]]
 -- Use Esc to turn off highlighting after searching for something.
 vim.keymap.set("n", "<esc>", "<cmd>noh<cr>")
 
+-- Set up yanky.
+vim.keymap.set({"n","x"}, "p", "<Plug>(YankyPutAfter)")
+vim.keymap.set({"n","x"}, "P", "<Plug>(YankyPutBefore)")
+
+vim.keymap.set("n", "[e", "<Plug>(YankyPreviousEntry)")
+vim.keymap.set("n", "]e", "<Plug>(YankyNextEntry)")
+
+
 -- Set up treesitter.
 require('nvim-treesitter.configs').setup {
   ensure_installed = { "lua", "vim", "vimdoc", "c", "cpp", "python", "rust", "markdown", "markdown_inline" },
