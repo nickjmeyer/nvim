@@ -194,6 +194,7 @@ vim.keymap.set("n", "<leader>bs",
 vim.keymap.set("n", "<leader>bc",
   function ()
     local buf_to_delete = vim.api.nvim_get_current_buf()
+    local delete_after_switch = (vim.bo[buf_to_delete].bufhidden ~= "delete") and (vim.bo[buf_to_delete].bufhidden ~= "wipe")
 
     local buffers = require("buffer_mru").mru_buffers()
     -- Try to switch to another buffer that isn't viewed before we delete the original buffer.
@@ -201,16 +202,22 @@ vim.keymap.set("n", "<leader>bc",
       if vim.tbl_isempty(vim.fn.win_findbuf(bufnr))
       then
         vim.cmd(string.format("buffer %d", bufnr))
-        vim.cmd(string.format("bdelete %d", buf_to_delete))
+        if delete_after_switch
+        then
+          vim.cmd(string.format("bdelete %d", buf_to_delete))
+        end
         return
       end
     end
     -- If there aren't any buffers to switch to, then switch to a new buffer
-    -- and then delete it. This ay be annoying if we find ourselves here often.
+    -- and then delete it. This may be annoying if we find ourselves here often.
     -- It could be better to just switch to another buffer even if its already
     -- open in another window.
     vim.cmd("enew")
-    vim.cmd(string.format("bdelete %d", buf_to_delete))
+    if delete_after_switch
+    then
+      vim.cmd(string.format("bdelete %d", buf_to_delete))
+    end
   end,
   { noremap = true, silent = true, desc = "Close buffer but keep window open." })
 
@@ -279,7 +286,7 @@ vim.keymap.set("n", "<leader>lr",
       vim.print("No related files.")
     elseif #related_files == 1
     then
-      vim.print(string.fomrat("%s/%s", directory, related_files[1]))
+      vim.print(string.format("%s/%s", directory, related_files[1]))
       vim.cmd(string.format("edit %s", related_files[1]))
     else
       local opts = {
