@@ -33,20 +33,6 @@ vim.keymap.set("n", "[e", "<Plug>(YankyPreviousEntry)")
 vim.keymap.set("n", "]e", "<Plug>(YankyNextEntry)")
 
 
--- Set up treesitter.
-require('nvim-treesitter.configs').setup {
-  ensure_installed = { "lua", "vim", "vimdoc", "c", "cpp", "python", "rust", "markdown", "markdown_inline" },
-
-  sync_install = false,
-
-  highlight = {
-    enable = true,
-  },
-  indent = {
-    enable = true,
-  },
-}
-
 -- Set up oil (this a directory editor).
 require("oil").setup({
   watch_for_changes = true,
@@ -340,4 +326,3 @@ vim.api.nvim_create_user_command("Bazel",
     nargs = "*",
     desc = "Invoke bazel.",
   })
-
