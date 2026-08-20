@@ -126,6 +126,16 @@ vim.keymap.set("n", "<leader>ps", grep_project_files, { desc = "Grep project fil
 
 local find_directory_cmd = "find . -name \".git\" -prune -o -type d -print"
 
+-- Use a normal :edit for directory entries so the configured file explorer
+-- can handle them (Oil, netrw, or another directory plugin). fzf-lua formats
+-- file entries for display, so parse that formatting before invoking :edit.
+local function edit_directory(selected, opts)
+  if not selected[1] then return end
+  local entry = require("fzf-lua").path.entry_to_file(selected[1], opts)
+  if not entry.path then return end
+  vim.cmd.edit({ args = { vim.fn.fnameescape(entry.path) } })
+end
+
 -- Find project directories.  By default it tries to search from the root of
 -- the git repo.  If not in a repo, it searches from the current directory and
 -- down.
@@ -139,7 +149,11 @@ local function find_project_directories()
   else
     vim.notify(string.format("Not in a Git repository. Searching from current directory: %s", buffer_dir), vim.log.levels.WARN)
   end
-  require("fzf-lua").files({ cmd = find_directory_cmd, cwd = dir_to_search })
+  require("fzf-lua").files({
+    cmd = find_directory_cmd,
+    cwd = dir_to_search,
+    actions = { ["enter"] = edit_directory },
+  })
 end
 
 -- Find directories in project.
@@ -152,7 +166,14 @@ vim.keymap.set("n", "<leader>lf", function() require("fzf-lua").files({ search =
 vim.keymap.set("n", "<leader>ls", function() require("fzf-lua").live_grep_native({ cwd = get_buffer_dir() }) end, { desc = "Grep files in same directory" })
 
 -- Find directories under current directory.
-vim.keymap.set("n", "<leader>ld", function() require("fzf-lua").files({ search = get_buffer_dir(), cmd = find_directory_cmd, cwd = get_buffer_dir() }) end, { desc = "Find files in same directory" })
+vim.keymap.set("n", "<leader>ld", function()
+  require("fzf-lua").files({
+    search = get_buffer_dir(),
+    cmd = find_directory_cmd,
+    cwd = get_buffer_dir(),
+    actions = { ["enter"] = edit_directory },
+  })
+end, { desc = "Find files in same directory" })
 
 -- Find open buffers
 vim.keymap.set("n", "<leader>bl", require("fzf-lua").buffers, { desc = "Find open buffers with FZF." })
